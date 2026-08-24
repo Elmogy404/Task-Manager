@@ -3,30 +3,9 @@ const app = express();
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 require("dotenv").config();
-const { Pool } = require("pg");
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-async function initDB() {
-  await pool.query(`CREATE TABLE IF NOT EXISTS tasks (
-  id SERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
-  done boolean NOT NULL DEFAULT false,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
-  const result = await pool.query("SELECT COUNT(*) FROM tasks");
-  if (Number(result.rows[0].count) === 0) {
-    await pool.query(`INSERT INTO tasks (title,done)
-      VALUES
-          ('Learn Express', false),
-          ('Build a CRUD API', true),
-          ('Submit assignment', false)`);
-  }
-}
+const pool = require("./db/pool");
+const initDB = require("./db/init");
+
 app.use(express.json());
 
 initDB()
@@ -126,7 +105,7 @@ FROM tasks;`);
 });
 /**
  * @swagger
-*  /tasks:
+ *  /tasks:
  *   get:
  *     summary: Get all tasks sorted by title
  *     parameters:
