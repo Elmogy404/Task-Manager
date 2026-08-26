@@ -5,6 +5,7 @@ const swaggerUi = require("swagger-ui-express");
 require("dotenv").config();
 const initDB = require("./db/init");
 const tasks = require("./routes/tasks.js");
+const errorHandler = require("./middleware/errorHandler");
 
 app.use(express.json());
 
@@ -45,6 +46,7 @@ const specs = swaggerJsdoc(options);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/tasks", tasks);
 
+app.use(errorHandler);
 app.get("/", (req, res) => {
   res.json({
     name: "Task API",
