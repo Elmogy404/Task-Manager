@@ -15,4 +15,4 @@ async function initDB() {
           ('Submit assignment', false)`);
   }
 }
-module.exports = { initDB };
+module.exports = initDB;
