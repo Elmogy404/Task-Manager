@@ -4,9 +4,9 @@ const controller = require("../controllers/tasksController");
 
 router.get("/", controller.getAllTasks);
 
-router.post("/", controller.postTask);
-
 router.get("/:id", controller.getTaskById);
+
+router.post("/", controller.postTask);
 
 router.put("/:id", controller.putTask);
 

@@ -6,6 +6,7 @@ require("dotenv").config();
 const initDB = require("./db/init");
 const tasks = require("./routes/tasks.js");
 const errorHandler = require("./middleware/errorHandler");
+const authRoutes = require("./routes/auth");
 
 app.use(express.json());
 
@@ -45,6 +46,7 @@ const options = {
 const specs = swaggerJsdoc(options);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/tasks", tasks);
+app.use("/auth", authRoutes);
 
 app.use(errorHandler);
 app.get("/", (req, res) => {
