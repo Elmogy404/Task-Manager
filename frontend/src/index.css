@@ -1,0 +1,91 @@
+:root {
+  /* Backgrounds */
+  --bg: #080611;
+  --surface: #11101a;
+  --surface-elevated: #171322;
+
+  /* Borders */
+  --border: #282238;
+
+  /* Purple */
+  --primary: #7c3aed;
+  --primary-bright: #a855f7;
+  --primary-soft: #c084fc;
+
+  /* Text */
+  --text-primary: #f5f3ff;
+  --text-secondary: #a9a3b8;
+  --text-muted: #716a80;
+
+  /* Status */
+  --success: #22c55e;
+  --danger: #ef4444;
+
+  /* Typography */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Effects */
+  --shadow-purple: 0 0 30px rgba(124, 58, 237, 0.15);
+  --transition: 200ms ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--primary-bright);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+input, select {
+  font-family: var(--font-body);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
