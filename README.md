@@ -1,34 +1,51 @@
-# Todo API
+# Task Manager — Full Stack Application
 
-A simple RESTful Todo API built with Node.js, Express and PostgreSQL. It supports full CRUD operations (Create, Read, Update, Delete). The API is documented with Swagger (OpenAPI).
+A full-stack task management application built with **Node.js, Express, PostgreSQL** (backend) and **React + Vite** (frontend). Features JWT-based authentication (login/signup), full CRUD operations on tasks, task statistics, and a polished dark-themed UI. The API is documented with **Swagger (OpenAPI)**.
 
 ## Features
 
-- Create tasks
-- Read all tasks (sorted by title)
-- Read a single task
-- Update tasks (partial update)
-- Delete tasks
-- Filter tasks by done status
+### Backend
+- User authentication (login & signup) with JWT tokens
+- Full CRUD operations on tasks (Create, Read, Update, Delete)
+- Filter tasks by done status (All / Completed / Pending)
 - Search tasks by title
-- Task statistics
+- Task statistics (total, completed, pending counts)
 - Request validation
 - Persistent PostgreSQL storage
 - Swagger UI documentation
 
+### Frontend
+- Dark-themed UI with animated gradient background
+- Login / Sign Up forms with email and password icons
+- Token persistence via localStorage (survives page refresh)
+- One source of truth for authentication state in React
+- Auth state checked on page load — no refresh needed
+- Animated stat cards with number counters
+- Task list with count badge, smooth hover and delete animations
+- Search, filter, and create tasks
+- Toast notifications for login/logout feedback
+- Responsive design (mobile-friendly)
+
 ## Technologies
 
+### Backend
 - Node.js
 - Express.js
-- PostgreSQL
-- pg (node-postgres)
-- dotenv
-- Swagger UI
-- swagger-jsdoc
+- PostgreSQL (via `pg`)
+- `dotenv`
+- `jsonwebtoken`
+- `bcrypt`
+- `swagger-jsdoc` + `swagger-ui-express`
+
+### Frontend
+- React 19
+- Vite
+- CSS Variables (dark theme)
+- Google Fonts (Inter + Space Grotesk)
 
 ## Database Setup
 
-This API uses a PostgreSQL database. Create a database, then create a `.env` file in the project root with your credentials:
+This application uses a PostgreSQL database. Create a database, then create a `.env` file in the project root:
 
 ```bash
 DB_HOST=localhost
@@ -36,130 +53,107 @@ DB_PORT=5432
 DB_USER=your_user
 DB_PASSWORD=your_password
 DB_NAME=crud_api
+JWT_SECRET=your_jwt_secret
 ```
 
-On first start, the `tasks` table is created automatically and seeded with sample tasks if the table is empty.
+On first start, the `tasks` and `users` tables are created automatically and seeded with sample data if the tables are empty.
 
 ## Installation
 
-Clone the repository:
-
-```bash
-git clone https://github.com/YOUR_USERNAME/CRUD_API.git
-```
-
-Install dependencies:
+### Backend
 
 ```bash
 npm install
-```
-
-Run the server:
-
-```bash
-node index.js
-```
-
-Or during development:
-
-```bash
-npx nodemon index.js
+npm run dev
 ```
 
 The server runs on:
-
 ```
 http://localhost:3000
 ```
 
 Swagger UI:
-
 ```
 http://localhost:3000/docs
 ```
 
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs on:
+```
+http://localhost:5173
+```
+
+## Authentication Flow
+
+The frontend uses `localStorage` as the single source of truth for whether a user has a token:
+
+```
+No token → Show Login / Sign Up
+Token exists → Show Dashboard + Logout
+```
+
+On page load, the frontend reads `localStorage.getItem("token")` to determine the UI state — no API call needed to check auth status.
+
+- **Login**: `localStorage.setItem("token", data.token)` + React state update → UI switches immediately
+- **Logout**: `localStorage.removeItem("token")` + React state reset → UI returns to unauthenticated state
+
 ## API Endpoints
 
-| Method | Endpoint   | Description                         |
-| ------ | ---------- | ----------------------------------- |
-| GET    | /          | API information                     |
-| GET    | /health    | Health check                        |
-| GET    | /stats     | Task statistics                     |
-| GET    | /tasks     | Get tasks (filter by `done`, `search`) |
-| GET    | /tasks/:id | Get a task by ID                    |
-| POST   | /tasks     | Create a task                       |
-| PUT    | /tasks/:id | Update a task (title and/or done)   |
-| DELETE | /tasks/:id | Delete a task                       |
+| Method | Endpoint   | Description                         | Auth Required |
+| ------ | ---------- | ----------------------------------- | ------------- |
+| POST   | /auth/login    | Login with email & password         | No            |
+| POST   | /auth/signup   | Create a new account                | No            |
+| GET    | /tasks         | Get all tasks (filter by `done`, `search`) | Yes     |
+| GET    | /tasks/:id     | Get a task by ID                    | Yes           |
+| POST   | /tasks         | Create a task                       | Yes           |
+| PUT    | /tasks/:id     | Update a task (title and/or done)   | Yes           |
+| DELETE | /tasks/:id     | Delete a task                       | Yes           |
+| GET    | /stats         | Task statistics                     | Yes           |
+| GET    | /              | API information                     | No            |
+| GET    | /health        | Health check                        | No            |
+| GET    | /docs          | Swagger UI documentation            | No            |
 
 ## Example cURL
 
 Create a task:
-
 ```bash
 curl -X POST http://localhost:3000/tasks \
--H "Content-Type: application/json" \
--d "{\"title\":\"Buy milk\"}"
-```
-
-Example response:
-
-```json
-{
-  "id": 4,
-  "title": "Buy milk",
-  "done": false,
-  "created_at": "2026-08-20T10:00:00.000Z",
-  "updated_at": "2026-08-20T10:00:00.000Z"
-}
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"title":"Buy milk"}'
 ```
 
 Get pending tasks:
-
 ```bash
-curl http://localhost:3000/tasks?done=false
-```
-
-Search tasks by title:
-
-```bash
-curl http://localhost:3000/tasks?search=express
+curl http://localhost:3000/tasks?done=false \
+  -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 Get task statistics:
-
 ```bash
-curl http://localhost:3000/stats
-```
-
-Example response:
-
-```json
-{
-  "total": 4,
-  "done": 1,
-  "pending": 3
-}
-```
-
-Update a task (partial update):
-
-```bash
-curl -X PUT http://localhost:3000/tasks/4 \
--H "Content-Type: application/json" \
--d "{\"done\":true}"
+curl http://localhost:3000/stats \
+  -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ## Swagger UI
 
 Open:
-
 ```
 http://localhost:3000/docs
 ```
 
-Add your Swagger screenshot below.
-
 ![Swagger UI](images/swagger.png)
+
+## Screenshots
+
+> Add frontend screenshots below (dashboard, auth forms, task list, stats).
 
 ## License
 

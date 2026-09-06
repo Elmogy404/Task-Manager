@@ -43,10 +43,10 @@ export const api = {
     const qs = new URLSearchParams(params).toString();
     return request(`/tasks${qs ? "?" + qs : ""}`);
   },
-  createTask: (title) =>
+  createTask: (title, done) =>
     request("/tasks", {
       method: "POST",
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ title, done }),
     }),
   getTask: (id) => request(`/tasks/${id}`),
   updateTask: (id, data) =>
@@ -55,5 +55,4 @@ export const api = {
       body: JSON.stringify(data),
     }),
   deleteTask: (id) => request(`/tasks/${id}`, { method: "DELETE" }),
-  getStats: () => request("/stats"),
 };

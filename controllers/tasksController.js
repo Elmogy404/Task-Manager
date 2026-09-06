@@ -2,8 +2,8 @@ const pool = require("../db/pool");
 
 async function getAllTasks(req, res) {
   let query = "SELECT * FROM tasks";
-  const values = [];
-  const conditions = [];
+  const values = [req.user.userId];
+  const conditions = ["user_id = $1"];
 
   if (req.query.done !== undefined) {
     conditions.push(`done = $${values.length + 1}`);
@@ -14,9 +14,7 @@ async function getAllTasks(req, res) {
     values.push(`%${req.query.search}%`);
   }
 
-  if (conditions.length > 0) {
-    query += " WHERE " + conditions.join(" AND ");
-  }
+  query += " WHERE " + conditions.join(" AND ");
   query += " ORDER BY title ASC";
   const result = await pool.query(query, values);
   res.status(200).json(result.rows);
@@ -24,25 +22,27 @@ async function getAllTasks(req, res) {
 
 async function getTaskById(req, res) {
   const id = Number(req.params.id);
-  const result = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
+  const result = await pool.query(
+    "SELECT * FROM tasks WHERE id = $1 AND user_id = $2",
+    [id, req.user.userId],
+  );
   if (result.rows.length === 0) {
     return res.status(404).json({ error: `Task ${id} not found` });
-  } else {
-    return res.status(200).json(result.rows[0]);
   }
+  return res.status(200).json(result.rows[0]);
 }
 
 async function postTask(req, res) {
-  const { title } = req.body || {};
+  const { title, done } = req.body || {};
   if (typeof title !== "string" || title.trim() === "") {
     return res.status(400).json({
       error: "Title is required",
     });
   }
   const result = await pool.query(
-    `INSERT INTO tasks (title,done)
-        VALUES ($1, false) RETURNING *`,
-    [title],
+    `INSERT INTO tasks (title,done, user_id)
+        VALUES ($1, $2, $3) RETURNING *`,
+    [title, done, req.user.userId],
   );
   res.status(201).json(result.rows[0]);
 }
@@ -74,9 +74,9 @@ async function putTask(req, res) {
         title = COALESCE($1, title),
         done = COALESCE($2, done),
         updated_at = CURRENT_TIMESTAMP
-        WHERE id = $3
+        WHERE id = $3 AND user_id = $4
         RETURNING *`,
-    [title ?? null, done ?? null, id],
+    [title ?? null, done ?? null, id, req.user.userId],
   );
   if (result.rows.length === 0) {
     return res.status(404).json({ error: "Task " + id + " not found" });
@@ -87,8 +87,8 @@ async function putTask(req, res) {
 async function deleteTask(req, res) {
   const id = Number(req.params.id);
   const result = await pool.query(
-    "DELETE FROM tasks WHERE id = $1 RETURNING *",
-    [id],
+    "DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING *",
+    [id, req.user.userId],
   );
   if (result.rows.length === 0) {
     return res.status(404).json({ error: `Task ${id} not found` });

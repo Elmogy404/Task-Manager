@@ -4,9 +4,11 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 require("dotenv").config();
 const initDB = require("./db/init");
+const pool = require("./db/pool");
 const tasks = require("./routes/tasks.js");
 const errorHandler = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth");
+const authMiddleware = require("./middleware/auth");
 
 app.use(express.json());
 
@@ -79,12 +81,15 @@ app.get("/health", (req, res) => {
  *         description: Server is healthy
  */
 
-app.get("/stats", async (req, res) => {
-  const result = await pool.query(`SELECT
+app.get("/stats", authMiddleware, async (req, res) => {
+  const result = await pool.query(
+    `SELECT
     COUNT(*) AS total,
     COUNT(*) FILTER (WHERE done = true) AS done,
     COUNT(*) FILTER (WHERE done = false) AS pending
-FROM tasks;`);
+  FROM tasks Where user_id = $1;`,
+    [req.user.userId],
+  );
   res.json({
     total: Number(result.rows[0].total),
     done: Number(result.rows[0].done),

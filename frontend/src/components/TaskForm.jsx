@@ -1,5 +1,13 @@
 import { useState } from "react";
 
+function CheckIcon({ checked }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: checked ? 1 : 0.3 }}>
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  );
+}
+
 export default function TaskForm({ onSubmit, initialTitle, initialDone, taskId, onCancel }) {
   const [title, setTitle] = useState(initialTitle || "");
   const [done, setDone] = useState(initialDone || false);
@@ -9,10 +17,9 @@ export default function TaskForm({ onSubmit, initialTitle, initialDone, taskId, 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setLoading(false);
     try {
-      const data = { title: title.trim() || undefined, done };
-      await onSubmit(taskId ? { ...data, id: taskId } : data);
+      await onSubmit(title.trim(), done);
       if (!taskId) {
         setTitle("");
         setDone(false);
@@ -26,7 +33,12 @@ export default function TaskForm({ onSubmit, initialTitle, initialDone, taskId, 
 
   return (
     <form className="task-form" onSubmit={handleSubmit}>
-      <h3>{taskId ? "Edit Task" : "Create Task"}</h3>
+      <div className="task-form-header">
+        <h3>{taskId ? "Edit Task" : "New Task"}</h3>
+        <button type="button" className="btn btn-ghost btn-form-close" onClick={onCancel}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
       {error && <div className="error-msg">{error}</div>}
       <label>
         <span>Title</span>
@@ -34,38 +46,20 @@ export default function TaskForm({ onSubmit, initialTitle, initialDone, taskId, 
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter task title..."
+          placeholder="What needs to be done?"
           required
+          autoFocus
         />
       </label>
-      {!taskId && (
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={(e) => setDone(e.target.checked)}
-          />
-          <span>Mark as done</span>
-        </label>
-      )}
-      {taskId && (
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={done}
-            onChange={(e) => setDone(e.target.checked)}
-          />
-          <span>Completed</span>
-        </label>
-      )}
-      <div className="task-form-actions">
-        <button type="submit" className="btn btn-primary" disabled={loading}>
-          {loading ? (taskId ? "Saving..." : "Creating...") : (taskId ? "Save" : "Create")}
-        </button>
-        <button type="button" className="btn btn-ghost" onClick={onCancel}>
-          Cancel
-        </button>
-      </div>
+      <label className="checkbox-label">
+        <span className="checkbox-custom" onClick={() => setDone(!done)}>
+          <CheckIcon checked={done} />
+        </span>
+        <span>Mark as done</span>
+      </label>
+      <button type="submit" className="btn btn-primary" disabled={loading || !title.trim()}>
+        {taskId ? "Save" : "Create"}
+      </button>
     </form>
   );
 }

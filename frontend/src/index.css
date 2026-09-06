@@ -1,36 +1,21 @@
 :root {
-  /* Backgrounds */
   --bg: #080611;
   --surface: #11101a;
   --surface-elevated: #171322;
-
-  /* Borders */
   --border: #282238;
-
-  /* Purple */
   --primary: #7c3aed;
   --primary-bright: #a855f7;
   --primary-soft: #c084fc;
-
-  /* Text */
   --text-primary: #f5f3ff;
   --text-secondary: #a9a3b8;
   --text-muted: #716a80;
-
-  /* Status */
   --success: #22c55e;
   --danger: #ef4444;
-
-  /* Typography */
   --font-heading: "Space Grotesk", sans-serif;
   --font-body: "Inter", sans-serif;
-
-  /* Shape */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-
-  /* Effects */
   --shadow-purple: 0 0 30px rgba(124, 58, 237, 0.15);
   --transition: 200ms ease;
 }
@@ -47,6 +32,22 @@ body {
   font-family: var(--font-body);
   line-height: 1.6;
   min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(124, 58, 237, 0.1), transparent),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(124, 58, 237, 0.06), transparent),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(168, 85, 247, 0.04), transparent);
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+  animation: bgShift 25s ease infinite alternate;
+}
+
+@keyframes bgShift {
+  0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+  100% { background-position: 100% 100%, 0% 0%, 30% 30%; }
+}
+
+@keyframes bgShift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
 }
 
 #root {

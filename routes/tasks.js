@@ -1,16 +1,20 @@
 const express = require("express");
 const router = express.Router();
+const validateTaskId = require("../middleware/validateTaskId");
 const controller = require("../controllers/tasksController");
+const authMiddleware = require("../middleware/auth");
+const validateTaskQuery = require("../middleware/validateTaskQuery");
+router.use(authMiddleware);
 
 router.get("/", controller.getAllTasks);
 
-router.get("/:id", controller.getTaskById);
+router.get("/:id", validateTaskId, controller.getTaskById);
 
 router.post("/", controller.postTask);
 
-router.put("/:id", controller.putTask);
+router.put("/:id", validateTaskId, controller.putTask);
 
-router.delete("/:id", controller.deleteTask);
+router.delete("/:id", validateTaskId, controller.deleteTask);
 
 /**
  * @swagger
