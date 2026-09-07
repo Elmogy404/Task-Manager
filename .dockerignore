@@ -1,0 +1,12 @@
+.git
+.gitignore
+.dockerignore
+fly.toml
+node_modules
+tests
+.agents
+skills-lock.json
+.neon
+.env
+*.md
+node_modules/.bin
