@@ -1,6 +1,6 @@
 # Task Manager — Full Stack Application
 
-A full-stack task management application built with **Node.js, Express, PostgreSQL** (backend) and **React + Vite** (frontend). Features JWT-based authentication (login/signup), full CRUD operations on tasks, task statistics, client-side sorting, and a polished dark-themed UI.
+A full-stack task management application built with **Node.js, Express, Supabase** (backend + PostgreSQL) and **React + Vite** (frontend). Features JWT-based authentication (login/signup), full CRUD operations on tasks, task statistics, client-side sorting, and a polished dark-themed UI.
 
 ## Features
 
@@ -12,9 +12,10 @@ A full-stack task management application built with **Node.js, Express, PostgreS
 - Search tasks by title
 - Task statistics (total, completed, pending — per user)
 - Request validation
-- Persistent PostgreSQL storage
+- Persistent PostgreSQL storage via Supabase
 - Swagger UI documentation
 - Login attempt throttling
+- Automatic table creation on startup
 
 ### Frontend
 - Dark-themed UI with animated gradient background
@@ -34,7 +35,7 @@ A full-stack task management application built with **Node.js, Express, PostgreS
 ### Backend
 - Node.js
 - Express.js
-- PostgreSQL (via `pg`)
+- PostgreSQL via Supabase
 - `dotenv`
 - `jsonwebtoken`
 - `bcrypt`
@@ -47,11 +48,17 @@ A full-stack task management application built with **Node.js, Express, PostgreS
 - CSS Variables (dark theme)
 - Google Fonts (Inter + Space Grotesk)
 
+## Live Demo
+
+- **Frontend**: [https://task-manager-eoa73xq42-elmogy404s-projects.vercel.app/](https://task-manager-eoa73xq42-elmogy404s-projects.vercel.app/)
+- **Backend**: [https://task-manager-j2oasa.fly.dev](https://task-manager-j2oasa.fly.dev)
+- **API Docs**: [https://task-manager-j2oasa.fly.dev/docs](https://task-manager-j2oasa.fly.dev/docs)
+- **Health**: [https://task-manager-j2oasa.fly.dev/health](https://task-manager-j2oasa.fly.dev/health)
+
 ## Local Development Setup
 
 ### Prerequisites
 - Node.js (v18+)
-- PostgreSQL (v14+)
 - npm
 
 ### Step 1: Clone the repository
@@ -65,14 +72,13 @@ cd Task-Manager
 npm install
 ```
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root with your Supabase credentials:
 ```env
-DB_HOST=localhost
+DB_HOST=db.qstcdmcitzdocizzdyfp.supabase.co
 DB_PORT=5432
-DB_USER=your_postgres_user
-DB_PASSWORD=your_postgres_password
-DB_NAME=tasks
-DATABASE_URL=postgresql://your_user:your_password@localhost:5432/tasks
+DB_USER=postgres
+DB_PASSWORD=your_supabase_password
+DB_NAME=postgres
 JWT_SECRET=your_strong_secret_here
 ```
 
@@ -87,48 +93,45 @@ Create a `.env` file in `frontend/`:
 VITE_API_URL=http://localhost:3000
 ```
 
-### Step 4: Start PostgreSQL
-Make sure your PostgreSQL server is running and create the `tasks` database:
-```bash
-createdb tasks
-```
-
-### Step 5: Run the backend
+### Step 4: Run the backend
 ```bash
 npm run dev
 ```
-Server runs on `http://localhost:3000`. The database tables (`users`, `login_attempts`, `tasks`) are created automatically.
+Server runs on `http://localhost:3000`. The Supabase database tables (`users`, `login_attempts`, `tasks`) are created automatically on startup.
 
-### Step 6: Run the frontend
+### Step 5: Run the frontend
 ```bash
 cd frontend
 npm run dev
 ```
 Frontend runs on `http://localhost:5173`.
 
-### Step 7: Test in browser
+### Step 6: Test in browser
 Open `http://localhost:5173`. Sign up, log in, create tasks, filter, sort, and manage your tasks.
 
 ## Deployment
 
-### Deploy Backend on Render (free)
+### Deploy Backend on Fly.io (free)
 
-1. Go to [render.com](https://render.com) and sign in with GitHub
-2. Click **New → Web Service** → select your `Task-Manager` repository
-3. Configure:
-   - **Name**: `task-manager`
-   - **Language**: `Node`
-   - **Branch**: `main`
-   - **Root Directory**: leave empty (repo root)
-   - **Build Command**: `npm install`
-   - **Start Command**: `node index.js`
-   - **Compute**: `Starter` → `$0 / month` (free)
-4. Add Environment Variables:
-   - `DATABASE_URL` — Render auto-provides this when you add a PostgreSQL database
-   - `JWT_SECRET` — your strong secret key
-5. **Add a PostgreSQL database**: In the Render dashboard, click **"Add a database"** → `Starter` → free tier
-6. Click **Deploy**
-7. Note the deployed URL (e.g., `https://task-manager-xxxx.onrender.com`)
+1. Install [Fly.io CLI](https://fly.io/docs/handbook/getting-started/#install-flyctl)
+2. Sign in: `flyctl auth login`
+3. Create project: `flyctl launch --name task-manager-j2oasa --region ams --dockerfile Dockerfile`
+4. Set secrets: `flyctl secrets set DB_PASSWORD=... JWT_SECRET=...`
+5. Deploy: `flyctl deploy -a task-manager-j2oasa`
+6. The app is available at `https://task-manager-j2oasa.fly.dev`
+
+Alternatively, use the Fly.io web dashboard:
+1. Go to [fly.io](https://fly.io) and sign in with GitHub
+2. Click **Launch App** → connect `Elmogy404/Task-Manager`
+3. Use the **NodeJS 18** preset Dockerfile
+4. Add environment variables:
+   - `DB_HOST` = `db.qstcdmcitzdocizzdyfp.supabase.co`
+   - `DB_PORT` = `5432`
+   - `DB_USER` = `postgres`
+   - `DB_PASSWORD` = your Supabase password
+   - `DB_NAME` = `postgres`
+   - `JWT_SECRET` = your secret
+5. Click **Deploy**
 
 ### Deploy Frontend on Vercel (free)
 
@@ -136,17 +139,18 @@ Open `http://localhost:5173`. Sign up, log in, create tasks, filter, sort, and m
 2. Click **Add New Project** → import `Task-Manager` repository
 3. Framework Preset: `Vite`
 4. Root Directory: `frontend`
-5. Build Command: `cd frontend && npm install && npm run build`
-6. Output Directory: `frontend/dist`
-7. Install Command: `cd frontend && npm install`
+5. Build Command: `npm run build`
+6. Output Directory: `dist`
+7. Install Command: `npm install`
 8. Add Environment Variable:
    - **Key**: `VITE_API_URL`
-   - **Value**: your Render backend URL (e.g., `https://task-manager-xxxx.onrender.com`)
+   - **Value**: `https://task-manager-j2oasa.fly.dev`
+   - Type: **Config** (not Secret, since `VITE_` prefix)
 9. Click **Deploy**
 10. Vercel gives you a URL like `https://task-manager-xxxx.vercel.app`
 
 ### Demo Link
-`[Your deployed URL here]`
+`[https://task-manager-eoa73xq42-elmogy404s-projects.vercel.app](https://task-manager-eoa73xq42-elmogy404s-projects.vercel.app/)`
 
 ### Quick Deploy Commands
 ```bash
@@ -156,11 +160,23 @@ git add .
 git commit -m "Deploy-ready"
 git push origin main
 
-# Deploy on Render (backend auto-deploys from GitHub)
+# Deploy on Fly.io (backend)
+flyctl deploy -a task-manager-j2oasa
+
 # Deploy on Vercel (frontend)
 cd frontend
 vercel --prod
 ```
+
+## Supabase Setup
+
+### Create a Supabase project
+1. Go to [supabase.com](https://supabase.com) and sign in with GitHub
+2. Click **New Project** → set name, password, and region
+3. Go to **Settings → Database → Connections** → copy the `postgresql://` URI
+4. Use that URI in your `.env` file as `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+
+The Supabase database automatically creates the required tables on first startup via `db/init.js`.
 
 ## API Endpoints
 
@@ -183,7 +199,7 @@ vercel --prod
 
 Create a task:
 ```bash
-curl -X POST https://your-app.onrender.com/tasks \
+curl -X POST https://task-manager-j2oasa.fly.dev/tasks \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -d '{"title":"Buy milk","done":false}'
@@ -191,19 +207,19 @@ curl -X POST https://your-app.onrender.com/tasks \
 
 Get pending tasks:
 ```bash
-curl https://your-app.onrender.com/tasks?done=false \
+curl https://task-manager-j2oasa.fly.dev/tasks?done=false \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 Get task statistics:
 ```bash
-curl https://your-app.onrender.com/stats \
+curl https://task-manager-j2oasa.fly.dev/stats \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 Login:
 ```bash
-curl -X POST https://your-app.onrender.com/auth/login \
+curl -X POST https://task-manager-j2oasa.fly.dev/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com","password":"password123"}'
 ```
@@ -212,7 +228,7 @@ curl -X POST https://your-app.onrender.com/auth/login \
 
 Open after deploying:
 ```
-https://your-app.onrender.com/docs
+https://task-manager-j2oasa.fly.dev/docs
 ```
 
 ## Database Schema
@@ -247,27 +263,23 @@ https://your-app.onrender.com/docs
 
 ```
 Task-Manager/
-├── backend/
-│   ├── controllers/
-│   │   ├── authController.js
-│   │   └── tasksController.js
-│   ├── db/
-│   │   ├── init.js
-│   │   └── pool.js
-│   ├── middleware/
-│   │   ├── auth.js
-│   │   ├── errorHandler.js
-│   │   ├── validateAuth.js
-│   │   ├── validateTaskId.js
-│   │   └── validateTaskQuery.js
-│   ├── routes/
-│   │   ├── auth.js
-│   │   └── tasks.js
-│   ├── services/
-│   │   └── loginAttempts.js
-│   ├── .env
-│   ├── package.json
-│   └── index.js
+├── controllers/
+│   ├── authController.js
+│   └── tasksController.js
+├── db/
+│   ├── init.js
+│   └── pool.js
+├── middleware/
+│   ├── auth.js
+│   ├── errorHandler.js
+│   ├── validateAuth.js
+│   ├── validateTaskId.js
+│   └── validateTaskQuery.js
+├── routes/
+│   ├── auth.js
+│   └── tasks.js
+├── services/
+│   └── loginAttempts.js
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -290,6 +302,9 @@ Task-Manager/
 │   ├── package.json
 │   ├── vite.config.js
 │   └── index.html
+├── Dockerfile
+├── fly.toml
+├── .dockerignore
 ├── .gitignore
 ├── package.json
 └── README.md
