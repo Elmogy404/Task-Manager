@@ -14,13 +14,12 @@ app.use(express.json());
 
 initDB()
   .then(() => {
-    app.listen(process.env.PORT || 3000, () => {
-      console.log("Server is running on http://localhost:3000");
-    });
+    console.log("Database connected successfully");
   })
   .catch((err) => {
-    console.error("Failed to initialize database:", err);
+    console.error("Database connection failed, server starting without tables:", err.message);
   });
+
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -49,7 +48,6 @@ const specs = swaggerJsdoc(options);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/tasks", tasks);
 app.use("/auth", authRoutes);
-
 app.use(errorHandler);
 app.get("/", (req, res) => {
   res.json({
@@ -58,29 +56,9 @@ app.get("/", (req, res) => {
     endpoints: ["/tasks"],
   });
 });
-/**
- * @swagger
- * /:
- *   get:
- *     summary: API info
- *     responses:
- *       200:
- *         description: API information
- */
-
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
-/**
- * @swagger
- * /health:
- *   get:
- *     summary: Health check
- *     responses:
- *       200:
- *         description: Server is healthy
- */
-
 app.get("/stats", authMiddleware, async (req, res) => {
   const result = await pool.query(
     `SELECT
@@ -96,23 +74,8 @@ app.get("/stats", authMiddleware, async (req, res) => {
     pending: Number(result.rows[0].pending),
   });
 });
-/**
- * @swagger
- * /stats:
- *   get:
- *     summary: Task statistics
- *     responses:
- *       200:
- *         description: Count of total, done and pending tasks
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 total:
- *                   type: integer
- *                 done:
- *                   type: integer
- *                 pending:
- *                   type: integer
- */
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server is running on port " + PORT);
+});
