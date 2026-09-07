@@ -1,9 +1,6 @@
 app = "task-manager-j2oasa"
 primary_region = "ams"
 
-[build]
-  dockerfile = "Dockerfile"
-
 [env]
   DB_HOST = "db.qstcdmcitzdocizzdyfp.supabase.co"
   DB_PORT = "5432"
@@ -18,6 +15,7 @@ primary_region = "ams"
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
+  processes = ["app"]
 
 [[vm]]
   memory = "256"
