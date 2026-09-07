@@ -1,26 +1,14 @@
 const bcrypt = require("bcrypt");
 const pool = require("../db/pool");
 const jwt = require("jsonwebtoken");
-
-function validate(email, password) {
-  if (!email && !password) {
-    return "Email and password are required";
-  }
-  if (!email) {
-    return "Email is required";
-  }
-  if (!password) {
-    return "Password is required";
-  }
-  return null;
-}
+const {
+  recordFailedAttempt,
+  checkLoginAllowed,
+  clearFailedAttempts,
+} = require("../services/loginAttempts");
 
 async function signup(req, res) {
   const { email, password } = req.body;
-  const error = validate(email, password);
-  if (error) {
-    return res.status(400).json({ error });
-  }
   const passwordHash = await bcrypt.hash(password, 10);
   const result = await pool.query(
     `INSERT INTO users (email, password_hash)
@@ -32,21 +20,28 @@ async function signup(req, res) {
 
 async function login(req, res) {
   const { email, password } = req.body;
-  const error = validate(email, password);
-  if (error) {
-    return res.status(400).json({ error });
+  const allowed = await checkLoginAllowed(email, req.ip);
+  if (!allowed) {
+    return res.status(429).json({
+      error: "Too many failed login attempts. Please try again later.",
+    });
   }
   const result = await pool.query(`SELECT * FROM users WHERE email = $1`, [
     email,
   ]);
   if (result.rows.length === 0) {
+    await recordFailedAttempt(email, req.ip);
     return res.status(401).json({
       error: "Invalid email or password",
     });
   }
   const user = result.rows[0];
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
+  if (passwordMatch) {
+    await clearFailedAttempts(email, req.ip);
+  }
   if (!passwordMatch) {
+    await recordFailedAttempt(email, req.ip);
     return res.status(401).json({
       error: "Invalid email or password",
     });
