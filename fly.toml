@@ -5,9 +5,7 @@ primary_region = "ams"
   DB_HOST = "db.qstcdmcitzdocizzdyfp.supabase.co"
   DB_PORT = "5432"
   DB_USER = "postgres"
-  DB_PASSWORD = "0123465Mo!12$"
   DB_NAME = "postgres"
-  JWT_SECRET = "0123465taskS"
 
 [http_service]
   internal_port = 8080
