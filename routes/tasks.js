@@ -6,7 +6,7 @@ const authMiddleware = require("../middleware/auth");
 const validateTaskQuery = require("../middleware/validateTaskQuery");
 router.use(authMiddleware);
 
-router.get("/", controller.getAllTasks);
+router.get("/", validateTaskQuery, controller.getAllTasks);
 
 router.get("/:id", validateTaskId, controller.getTaskById);
 
@@ -18,8 +18,10 @@ router.delete("/:id", validateTaskId, controller.deleteTask);
 
 /**
  * @swagger
- *  /tasks:
+ * /tasks:
  *   get:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Get all tasks sorted by title
  *     parameters:
  *       - in: query
@@ -42,12 +44,16 @@ router.delete("/:id", validateTaskId, controller.deleteTask);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Task'
+ *       401:
+ *         description: Unauthorized
  */
 
 /**
  * @swagger
  * /tasks:
  *   post:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Create a new task
  *     requestBody:
  *       required: true
@@ -69,12 +75,17 @@ router.delete("/:id", validateTaskId, controller.deleteTask);
  *               $ref: '#/components/schemas/Task'
  *       400:
  *         description: Title is required
+ *       401:
+ *         description: Unauthorized
  */
+
 /**
  * @swagger
  * /tasks/{id}:
  *  get:
- *    summary: Read a specifc task
+ *    security:
+ *      - bearerAuth: []
+ *    summary: Read a specific task
  *    parameters:
  *      - in: path
  *        name: id
@@ -83,20 +94,25 @@ router.delete("/:id", validateTaskId, controller.deleteTask);
  *          type: integer
  *    responses:
  *      404:
- *        description: NOT found
+ *        description: Task not found
+ *      401:
+ *        description: Unauthorized
  *      200:
- *        description: found
+ *        description: Task found
  *        content:
  *          application/json:
  *            schema:
  *              $ref: '#/components/schemas/Task'
  *
  */
+
 /**
  * @swagger
  * /tasks/{id}:
  *  put:
- *    summary: update a task
+ *    security:
+ *      - bearerAuth: []
+ *    summary: Update a task
  *    requestBody:
  *      required: true
  *      content:
@@ -116,22 +132,26 @@ router.delete("/:id", validateTaskId, controller.deleteTask);
  *          type: integer
  *    responses:
  *       404:
- *          description: NOT found
+ *        description: Task not found
  *       400:
- *          description: Invalid request body
+ *        description: Invalid request body
  *       200:
- *          description: UPDATED!!
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '#/components/schemas/Task'
+ *        description: Task updated
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/Task'
+ *       401:
+ *        description: Unauthorized
  */
 
 /**
  * @swagger
  * /tasks/{id}:
  *  delete:
- *    summary: delete a task
+ *    security:
+ *      - bearerAuth: []
+ *    summary: Delete a task
  *    parameters:
  *      - in: path
  *        name: id
@@ -140,9 +160,11 @@ router.delete("/:id", validateTaskId, controller.deleteTask);
  *          type: integer
  *    responses:
  *      404:
- *        description: NOT found
+ *        description: Task not found
  *      204:
- *        description: DELETED!!
+ *        description: Task deleted
+ *      401:
+ *        description: Unauthorized
  */
 
 module.exports = router;

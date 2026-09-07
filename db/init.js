@@ -17,11 +17,14 @@ async function initDB() {
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     done boolean NOT NULL DEFAULT false,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`);
-  await pool.query(`ALTER TABLE tasks ALTER COLUMN user_id DROP NOT NULL`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_tasks_updated_at ON tasks(updated_at)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_login_attempts_email ON login_attempts(email)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_login_attempts_last_attempt ON login_attempts(last_attempt_at)`);
   const result = await pool.query("SELECT COUNT(*) FROM tasks");
   if (Number(result.rows[0].count) === 0) {
     const userResult = await pool.query(

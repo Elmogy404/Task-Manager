@@ -9,13 +9,20 @@ const {
 
 async function signup(req, res) {
   const { email, password } = req.body;
-  const passwordHash = await bcrypt.hash(password, 10);
-  const result = await pool.query(
-    `INSERT INTO users (email, password_hash)
-        VALUES ($1, $2) RETURNING id, email`,
-    [email, passwordHash],
-  );
-  res.status(201).json(result.rows[0]);
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      `INSERT INTO users (email, password_hash)
+          VALUES ($1, $2) RETURNING id, email`,
+      [email, passwordHash],
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(409).json({ error: "Email already exists" });
+    }
+    throw err;
+  }
 }
 
 async function login(req, res) {
@@ -37,15 +44,13 @@ async function login(req, res) {
   }
   const user = result.rows[0];
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
-  if (passwordMatch) {
-    await clearFailedAttempts(email, req.ip);
-  }
   if (!passwordMatch) {
     await recordFailedAttempt(email, req.ip);
     return res.status(401).json({
       error: "Invalid email or password",
     });
   }
+  await clearFailedAttempts(email, req.ip);
   const token = jwt.sign(
     {
       userId: user.id,
@@ -60,7 +65,12 @@ async function login(req, res) {
   });
 }
 
+async function logout(req, res) {
+  res.sendStatus(204);
+}
+
 module.exports = {
   signup,
   login,
+  logout,
 };

@@ -1,6 +1,6 @@
 # Task Manager — Full Stack Application
 
-A full-stack task management application built with **Node.js, Express, Supabase** (backend + PostgreSQL) and **React + Vite** (frontend). Features JWT-based authentication (login/signup), full CRUD operations on tasks, task statistics, client-side sorting, and a polished dark-themed UI.
+A full-stack task management application built with **Node.js, Express, PostgreSQL** (backend + database) and **React + Vite** (frontend). Features JWT-based authentication (login/signup), full CRUD operations on tasks, task statistics, client-side sorting, and a polished dark-themed UI.
 
 ## Features
 
@@ -11,8 +11,11 @@ A full-stack task management application built with **Node.js, Express, Supabase
 - Filter tasks by done status (All / Completed / Pending)
 - Search tasks by title
 - Task statistics (total, completed, pending — per user)
+- Helmet security headers
+- CORS configuration
+- JSON body size limit
 - Request validation
-- Persistent PostgreSQL storage via Supabase
+- Persistent PostgreSQL storage
 - Swagger UI documentation
 - Login attempt throttling
 - Automatic table creation on startup
@@ -30,12 +33,18 @@ A full-stack task management application built with **Node.js, Express, Supabase
 - Toast notifications for login/logout/create/update/delete
 - Responsive design (mobile-friendly)
 
+## Security Limitations
+
+- **JWT Logout is client-side only**: The `/auth/logout` endpoint does not revoke an already-issued JWT. Because the system uses stateless JWTs, a token remains valid until its 1-hour expiration even after logout. For production use, consider implementing a token blocklist or short-lived tokens with refresh tokens.
+- **JWT Secret**: The `JWT_SECRET` in `.env` should be a strong, random string in production.
+
 ## Technologies
 
 ### Backend
 - Node.js
 - Express.js
 - PostgreSQL via Supabase
+- `helmet`
 - `dotenv`
 - `jsonwebtoken`
 - `bcrypt`
@@ -72,14 +81,15 @@ cd Task-Manager
 npm install
 ```
 
-Create a `.env` file in the project root with your Supabase credentials:
+Create a `.env` file in the project root with your database credentials:
 ```env
-DB_HOST=db.qstcdmcitzdocizzdyfp.supabase.co
+DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=your_supabase_password
+DB_PASSWORD=your_password
 DB_NAME=postgres
 JWT_SECRET=your_strong_secret_here
+CORS_ORIGIN=http://localhost:5173
 ```
 
 ### Step 3: Frontend setup
@@ -168,15 +178,12 @@ cd frontend
 vercel --prod
 ```
 
-## Supabase Setup
+## Database Setup
 
-### Create a Supabase project
-1. Go to [supabase.com](https://supabase.com) and sign in with GitHub
-2. Click **New Project** → set name, password, and region
-3. Go to **Settings → Database → Connections** → copy the `postgresql://` URI
-4. Use that URI in your `.env` file as `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
-
-The Supabase database automatically creates the required tables on first startup via `db/init.js`.
+### Create a PostgreSQL database
+1. Install PostgreSQL locally or use any PostgreSQL provider
+2. Ensure the database is running
+3. The tables (`users`, `login_attempts`, `tasks`) are created automatically on startup via `db/init.js`
 
 ## API Endpoints
 
