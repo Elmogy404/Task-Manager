@@ -1,0 +1,25 @@
+app = "task-manager-j2oasa"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DB_HOST = "db.qstcdmcitzdocizzdyfp.supabase.co"
+  DB_PORT = "5432"
+  DB_USER = "postgres"
+  DB_PASSWORD = "0123465Mo!12$"
+  DB_NAME = "postgres"
+  JWT_SECRET = "0123465taskS"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "256"
+  cpu_kind = "shared"
+  cpus = 1
