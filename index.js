@@ -10,6 +10,13 @@ const errorHandler = require("./middleware/errorHandler");
 const authRoutes = require("./routes/auth");
 const authMiddleware = require("./middleware/auth");
 
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+});
+
 app.use(express.json());
 
 initDB()
@@ -50,11 +57,7 @@ app.use("/tasks", tasks);
 app.use("/auth", authRoutes);
 app.use(errorHandler);
 app.get("/", (req, res) => {
-  res.json({
-    name: "Task API",
-    version: "1.0",
-    endpoints: ["/tasks"],
-  });
+  res.json({ name: "Task API", version: "1.0", endpoints: ["/tasks"] });
 });
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -65,7 +68,7 @@ app.get("/stats", authMiddleware, async (req, res) => {
     COUNT(*) AS total,
     COUNT(*) FILTER (WHERE done = true) AS done,
     COUNT(*) FILTER (WHERE done = false) AS pending
-  FROM tasks Where user_id = $1;`,
+  FROM tasks WHERE user_id = $1;`,
     [req.user.userId],
   );
   res.json({

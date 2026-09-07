@@ -17,17 +17,24 @@ async function initDB() {
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     done boolean NOT NULL DEFAULT false,
-    user_id INTEGER NOT NULL REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`);
+  await pool.query(`ALTER TABLE tasks ALTER COLUMN user_id DROP NOT NULL`);
   const result = await pool.query("SELECT COUNT(*) FROM tasks");
   if (Number(result.rows[0].count) === 0) {
-    await pool.query(`INSERT INTO tasks (title, done)
+    const userResult = await pool.query(
+      `INSERT INTO users (email, password_hash) VALUES ('seed@example.com', 'seed') RETURNING id`
+    );
+    const seedUserId = userResult.rows[0].id;
+    await pool.query(`INSERT INTO tasks (title, done, user_id)
       VALUES
-          ('Learn Express', false),
-          ('Build a CRUD API', true),
-          ('Submit assignment', false)`);
+          ('Learn Express', false, $1),
+          ('Build a CRUD API', true, $1),
+          ('Submit assignment', false, $1)`,
+      [seedUserId]
+    );
   }
 }
 module.exports = initDB;
