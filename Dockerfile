@@ -1,6 +1,14 @@
-FROM node:24-slim
-WORKDIR /app
+FROM node:18 AS build
+WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm install --production
+RUN npm install
 COPY . .
-CMD ["node", "index.js"]
+FROM node:18
+WORKDIR /usr/src/app
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/package*.json ./
+COPY --from=build /usr/src/app .
+ENV PORT=8080
+EXPOSE $PORT
+USER node
+CMD [ "node", "index.js" ]
